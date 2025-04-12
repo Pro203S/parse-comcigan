@@ -113,6 +113,7 @@ comci.GetClassList(96211).then(data => {
 |original|여기서 original만 빠진 오브젝트|원래 시간표|No|
 
 ## 업데이트 로그
-
+### 0.0.2
+- package.json 수정
 ### 0.0.1
 - 첫번째 릴리즈

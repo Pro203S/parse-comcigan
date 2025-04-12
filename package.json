@@ -1,6 +1,6 @@
 {
   "name": "parse-comcigan",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "컴시간 알리미에서 시간표를 가져오는 라이브러리입니다.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
