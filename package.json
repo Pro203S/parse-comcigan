@@ -22,5 +22,17 @@
   "dependencies": {
     "axios": "^1.8.4",
     "iconv-lite": "^0.6.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pro203S/parse-comcigan.git"
+  },
+  "keywords": [
+    "school",
+    "timetable"
+  ],
+  "homepage": "https://github.com/Pro203S/parse-comcigan.git",
+  "bugs": {
+    "url": "https://github.com/Pro203S/parse-comcigan/issues"
   }
 }
