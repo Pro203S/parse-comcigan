@@ -122,6 +122,11 @@ comci.GetClassList(96211).then(data => {
 
 ## 업데이트 로그
 
+### 0.0.3
+
+- undefined 참조 버그 수정
+- 문서 잘못되어있던 버그 수정
+
 ### 0.0.2
 
 - package.json 수정
