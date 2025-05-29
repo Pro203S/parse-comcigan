@@ -123,6 +123,8 @@ export default class Comcigan {
             const json = JSON.parse(step2.slice(0, step2.indexOf("}") + 1));
             const WEEKDAY = ["월", "화", "수", "목", "금"];
             const sep = (_a = json.분리) !== null && _a !== void 0 ? _a : 100;
+            if (!json.시간표)
+                return undefined;
             // 시간표[학년][반][요일][교시]
             const origin = json.시간표[grade][classN];
             const today = json.학급시간표[grade][classN];

@@ -95,7 +95,7 @@ export default class Comcigan {
      * @param schoolCode
      * @param criteria
      */
-    GetTimetable(schoolCode: number, criteria: "weekday" | "period", grade: number, classN: number): Promise<ComciganTimetable>;
+    GetTimetable(schoolCode: number, criteria: "weekday" | "period", grade: number, classN: number): Promise<ComciganTimetable | undefined>;
     /**
      * 학급 목록을 가져옵니다.
      *
