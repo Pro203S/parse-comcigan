@@ -230,7 +230,7 @@ export default class Comcigan {
      * @param schoolCode 
      * @param criteria 
      */
-    public async GetTimetable(schoolCode: number, criteria: "weekday" | "period", grade: number, classN: number): Promise<ComciganTimetable> {
+    public async GetTimetable(schoolCode: number, criteria: "weekday" | "period", grade: number, classN: number): Promise<ComciganTimetable | undefined> {
         const str = `36174_${schoolCode}_1_4_0_3_1.00`;
         const route = (str.substring(9) + str.substring(0, 9)).split("").reverse().join("");
         const data = await this.request<string>(`7813?${route}`, true);
@@ -242,6 +242,8 @@ export default class Comcigan {
 
         const WEEKDAY = ["월", "화", "수", "목", "금"];
         const sep = json.분리 ?? 100;
+
+        if (!json.시간표) return undefined;
 
         // 시간표[학년][반][요일][교시]
         const origin = json.시간표[grade][classN];
@@ -353,6 +355,7 @@ export default class Comcigan {
         const step2 = step1.slice(step1.indexOf("{"));
         const json: RawComciganTimetable = JSON.parse(step2.slice(0, step2.indexOf("}") + 1));
         const rawClasses = json.학급수;
+        if (!rawClasses) return [];
         
         const toReturn: string[] = [];
         

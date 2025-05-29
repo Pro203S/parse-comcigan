@@ -5,10 +5,12 @@
 아직 학생 시간표밖에 지원하지 않습니다.  
 
 ## 경고
+
 본 라이브러리는 **비공식적**으로 컴시간알리미의 데이터를 파싱합니다.  
 상업적으로 사용하다 문제가 발생할경우, **제작자는 책임을 지지 않습니다.**
 
 ## 설치
+
 ```npm install parse-comcigan```
 
 ## 개발
@@ -33,7 +35,9 @@ const comci = new Comcigan({
     "debug": (msg) => console.log(msg) // 모듈에서 디버그 메시지를 보내면 콘솔에 출력합니다.
 });
 ```
+
 ---
+
 ### SearchSchool
 
 학교를 검색합니다.  
@@ -51,6 +55,7 @@ comci.SearchSchool("서울").then(data => {
 ```
 
 다음을 Promise 형태로 리턴합니다.  
+
 |키|타입|설명|
 |-----|----|-----|
 |region|string|학교의 지역|
@@ -58,6 +63,7 @@ comci.SearchSchool("서울").then(data => {
 |code|number|학교 코드|
 
 ---
+
 ### GetTimetable
 
 시간표를 가져옵니다.  
@@ -70,22 +76,24 @@ comci.SearchSchool("서울").then(data => {
 |classN|number|Yes|반|
 
 ```typescript
-comci.GetTimetable(96211, "weekday", 3, 5).then(data => {
+comci.GetTimetable(96211, "period", 3, 5).then(data => {
     console.log(data[0][5]); // [요일][교시] 월요일 5교시
 });
-comci.GetTimetable(96211, "period", 3, 5).then(data => {
+comci.GetTimetable(96211, "weekday", 3, 5).then(data => {
     console.log(data[5][0]); // [교시][요일] 월요일 5교시
 });
 ```
 
 다음을 Promise 형태로 리턴합니다.  
+
 |키|타입|설명|
 |-----|----|-----|
 |latestVersion|string|컴시간 앱 최신버전|
 |changed|string|수정된 날짜 시간|
-|timetable|[ComciganTimetableObject](#ComciganTimetableObject)[][]|시간표|
+|timetable|[ComciganTimetableObject](#comcigantimetableobject)[][]|시간표|
 
 ---
+
 ### GetClassList
 
 학급 리스트를 가져옵니다.  
@@ -113,7 +121,11 @@ comci.GetClassList(96211).then(data => {
 |original|여기서 original만 빠진 오브젝트|원래 시간표|No|
 
 ## 업데이트 로그
+
 ### 0.0.2
+
 - package.json 수정
+
 ### 0.0.1
+
 - 첫번째 릴리즈

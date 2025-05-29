@@ -56,8 +56,13 @@ export default class Comcigan {
             }
             this._options.debug ? this._options.debug(`[request] Requesting to http://comci.kr:4081/${route}`) : 0;
             const r = yield axios.get(`http://comci.kr:4081/${route}`, Object.assign({}, (this._options.doNotThrow && { "validateStatus": () => true })));
-            if (doNotParse)
+            if (doNotParse) {
+                if (this._options.cacheMs && this._options.cacheMs !== 0) {
+                    this._options.debug ? this._options.debug(`[request] Registered cache with id ${route}`) : 0;
+                    this._cache.register(route, r.data, this._options.cacheMs);
+                }
                 return r.data;
+            }
             const data = JSON.parse(r.data.slice(0, r.data.indexOf("}") + 1));
             if (this._options.cacheMs && this._options.cacheMs !== 0) {
                 this._options.debug ? this._options.debug(`[request] Registered cache with id ${route}`) : 0;
@@ -149,7 +154,7 @@ export default class Comcigan {
                         weekdayList.push({
                             "subject": originSubject,
                             "teacher": originTeacher,
-                            "replacedFrom": {
+                            "original": {
                                 "subject": changedSubject,
                                 "teacher": changedTeacher
                             }
@@ -185,7 +190,7 @@ export default class Comcigan {
                         periodList.push({
                             "subject": originSubject,
                             "teacher": originTeacher,
-                            "replacedFrom": {
+                            "original": {
                                 "subject": changedSubject,
                                 "teacher": changedTeacher
                             }
@@ -195,7 +200,7 @@ export default class Comcigan {
                 }
             }
             return {
-                "changedWhen": edited,
+                "changed": edited,
                 latestVersion,
                 "timetable": toReturn
             };
@@ -216,6 +221,8 @@ export default class Comcigan {
             const step2 = step1.slice(step1.indexOf("{"));
             const json = JSON.parse(step2.slice(0, step2.indexOf("}") + 1));
             const rawClasses = json.학급수;
+            if (!rawClasses)
+                return [];
             const toReturn = [];
             for (let g = 1; g < rawClasses.length; g++) {
                 for (let c = 1; c < rawClasses[g] + 1; c++) {

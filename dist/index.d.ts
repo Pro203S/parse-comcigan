@@ -45,7 +45,7 @@ export type ComciganTimetableObject = {
     /**
      * 만약 변경되었을때 이 값이 주어집니다.
      */
-    replacedFrom?: {
+    original?: {
         /**
          * 과목입니다.
          */
@@ -64,7 +64,7 @@ export type ComciganTimetable = {
     /**
      * 수정일입니다.
      */
-    changedWhen: string;
+    changed: string;
     /**
      * 시간표입니다.
      */
