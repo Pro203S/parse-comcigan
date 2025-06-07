@@ -31,7 +31,7 @@ import Comcigan from 'parse-comcigan';
 
 const comci = new Comcigan({
     "cacheMs": 10000, // 10초동안 캐시됩니다.
-    "doNotThrow": true, // true일때, status가 4 또는 5로 시작하면 throw 됩니다.
+    "doNotThrow": false, // false일때, status가 4 또는 5로 시작하면 throw 됩니다.
     "debug": (msg) => console.log(msg) // 모듈에서 디버그 메시지를 보내면 콘솔에 출력합니다.
 });
 ```
@@ -70,17 +70,27 @@ comci.SearchSchool("서울").then(data => {
 
 |파라메터|타입|필수|설명|
 |------|------|------|-----------|
-|schoolCode|number|Yes|학교 코드|
-|criteria|"weekday" or "period"|Yes|리스트 반환을 어떻게 할지 여부입니다.|
-|grade|number|Yes|학년|
-|classN|number|Yes|반|
+|options|[GetTimetableOptions](#gettimetableoptions)|Yes|옵션|
 
 ```typescript
-comci.GetTimetable(96211, "period", 3, 5).then(data => {
-    console.log(data[0][5]); // [요일][교시] 월요일 5교시
+comci.GetTimetable({
+    "schoolCode": 96211,
+    "criteria": "period",
+    "grade": 3,
+    "classN": 5,
+    "without8th": false
+}).then(data => {
+    console.log(data.timetable[0][7]); // [요일][교시] 월요일 8교시
 });
-comci.GetTimetable(96211, "weekday", 3, 5).then(data => {
-    console.log(data[5][0]); // [교시][요일] 월요일 5교시
+comci.GetTimetable({
+    "schoolCode": 96211,
+    "criteria": "weekday",
+    "grade": 3,
+    "classN": 5,
+    "without8th": true
+}).then(data => {
+    console.log(data.timetable[4][0]); // [교시][요일] 월요일 5교시
+    console.log(data.timetable[7]); // undefined
 });
 ```
 
@@ -120,7 +130,21 @@ comci.GetClassList(96211).then(data => {
 |changed|string|교사|Yes|
 |original|여기서 original만 빠진 오브젝트|원래 시간표|No|
 
+### GetTimetableOptions
+
+|파라메터|타입|필수|설명|
+|------|------|------|-----------|
+|schoolCode|number|Yes|학교 코드|
+|criteria|"weekday" or "period"|Yes|리스트 반환을 어떻게 할지 여부입니다.|
+|grade|number|Yes|학년|
+|classN|number|Yes|반|
+
 ## 업데이트 로그
+
+### 0.0.5
+
+- 문서의 많은 오류 수정
+- 8교시 제외 추가
 
 ### 0.0.4
 

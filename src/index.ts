@@ -1,84 +1,33 @@
 import axios from 'axios';
 import iconv from 'iconv-lite';
+import Cache from './cache.js';
 
-class Cache {
-    private _cacheStorage: {
-        [id: string]: {
-            "timeout": NodeJS.Timeout;
-            "data": any;
-        }
-    } = {};
-
-    public register(id: string, data: any, duration: number) {
-        this._cacheStorage[id] = {
-            "timeout": setTimeout(() => {
-                delete this._cacheStorage[id];
-            }, duration),
-            "data": data
-        };
-    }
-    public delete(id: string) {
-        clearTimeout(this._cacheStorage[id].timeout);
-        delete this._cacheStorage[id];
-    }
-    public clear() {
-        const caches = Object.keys(this._cacheStorage);
-        for (let cache of caches) {
-            clearTimeout(this._cacheStorage[cache].timeout);
-            delete this._cacheStorage[cache];
-        }
-    }
-    public has(id: string) {
-        return Boolean(this._cacheStorage[id]);
-    }
-    public get(id: string) {
-        return this._cacheStorage[id]?.data;
-    }
-}
-
-//#region 내부 타입
-type RawComciganSearched = {
-    "학교검색": [
-        number,
-        string,
-        string,
-        number
-    ][];
+//#region 타입 export
+export type GetTimetableOptions = {
+    /**
+     * 컴시간 학교 코드입니다.
+     */
+    "schoolCode": number,
+    /**
+     * 구분을 어떻게 할지 여부입니다.  
+     * 
+     * - weekday로 설정하면 시간표[교시][요일]로 과목과 선생님을 불러옵니다.
+     * - period로 설정하면 시간표[요일][교시]로 과목과 선생님을 불러옵니다.
+     */
+    "criteria": "weekday" | "period",
+    /**
+     * 학년입니다.
+     */
+    "grade": number,
+    /**
+     * 반입니다.
+     */
+    "classN": number,
+    /**
+     * 8교시를 빼고 리턴할지 여부입니다.
+     */
+    "without8th"?: boolean,
 };
-type RawComciganTimetable = {
-    교사수: number;
-    성명: string[];
-    학급수: number[];
-    요일별시수: number[][];
-    과목명: any[];
-    시간표: any;
-    전일제: number[];
-    버젼: string;
-    동시수업수: number;
-    담임: number[][];
-    가상학급수: number[];
-    특별실수: number;
-    열람제한일: string;
-    저장일: string;
-    학기시작일자: string;
-    학교명: string;
-    지역명: string;
-    학년도: number;
-    분리?: number;
-    강의실: number;
-    시작일: string;
-    일과시간: string[];
-    일자자료: [number, string][];
-    오늘r: number;
-    학급시간표: any;
-    교사시간표: any[];
-    강의실시간표: any;
-    동시그룹: number[][];
-    컴시간?: string;
-};
-//#endregion
-
-//#region 외부 타입
 export interface ComciganInitializeType {
     /**
      * 이 기간동안 컴시간과 통신한 데이터가 캐시됩니다.  
@@ -230,7 +179,9 @@ export default class Comcigan {
      * @param schoolCode 
      * @param criteria 
      */
-    public async GetTimetable(schoolCode: number, criteria: "weekday" | "period", grade: number, classN: number): Promise<ComciganTimetable | undefined> {
+    public async GetTimetable(options: GetTimetableOptions): Promise<ComciganTimetable | undefined> {
+        const { schoolCode, criteria, grade, classN, without8th } = options;
+
         const str = `36174_${schoolCode}_1_4_0_3_1.00`;
         const route = (str.substring(9) + str.substring(0, 9)).split("").reverse().join("");
         const data = await this.request<string>(`7813?${route}`, true);
@@ -254,7 +205,7 @@ export default class Comcigan {
         if (criteria === "period") {
             for (let weekday = 1; weekday < WEEKDAY.length + 1; weekday++) {
                 const weekdayList: ComciganTimetableObject[] = [];
-                for (let period = 1; period < 9; period++) {
+                for (let period = 1; period < (without8th ? 8 : 9); period++) {
                     const o = origin[weekday][period];
                     const t = today[weekday][period];
 
@@ -292,7 +243,7 @@ export default class Comcigan {
                 toReturn.push(weekdayList);
             }
         } else {
-            for (let period = 1; period < 9; period++) {
+            for (let period = 1; period < (without8th ? 8 : 9); period++) {
                 const periodList: ComciganTimetableObject[] = [];
                 for (let weekday = 1; weekday < WEEKDAY.length + 1; weekday++) {
                     const o = origin[weekday][period];
@@ -356,9 +307,9 @@ export default class Comcigan {
         const json: RawComciganTimetable = JSON.parse(step2.slice(0, step2.indexOf("}") + 1));
         const rawClasses = json.학급수;
         if (!rawClasses) return [];
-        
+
         const toReturn: string[] = [];
-        
+
         for (let g = 1; g < rawClasses.length; g++) {
             for (let c = 1; c < rawClasses[g] + 1; c++) {
                 toReturn.push(`${g}-${c}`);
