@@ -5,4 +5,5 @@ package-lock.json
 
 test.js
 test.ts
-dist/
+
+# 여기에 dist 폴더 추가하지마 그럼 npm에도 안올라가
