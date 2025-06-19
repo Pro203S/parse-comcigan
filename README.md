@@ -25,6 +25,7 @@ Comcigan 클래스의 인스턴스를 생성하여 사용합니다.
 |cacheMs|number|0|캐시될 시간(밀리초)입니다. 0일때 캐시를 비활성화합니다.|
 |doNotThrow|boolean|true|[Axios](https://axios-http.com/)에서 validateStatus를 항상 true로 반환할 지에 대한 여부입니다.|
 |debug|(msg: string) => any|undefined|디버그 메시지를 처리하는 콜백입니다. 이 콜백은 주로 컴시간과 통신할 때 호출됩니다.|
+|appVersion|string|2.11|컴시간알리미 안드로이드 앱의 버전입니다.|
 
 ```typescript
 import Comcigan from 'parse-comcigan';
@@ -140,6 +141,12 @@ comci.GetClassList(96211).then(data => {
 |classN|number|Yes|반|
 
 ## 업데이트 로그
+
+### 0.2.0
+
+- 버전 넘버링 수정
+- 앱 버전 수정 기능 추가
+- 시간표 버그 수정
 
 ### 0.0.6
 

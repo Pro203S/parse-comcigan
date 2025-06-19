@@ -18,6 +18,11 @@ export default class Comcigan {
     mTh(mm, m2) { if (m2 == 100) {
         return Math.floor(mm / m2);
     } return mm % m2; }
+    unusable(object, array) {
+        if (object === array[0])
+            return;
+        return object;
+    }
     request(route, doNotParse) {
         return __awaiter(this, void 0, void 0, function* () {
             if (this._cache.has(route)) {
@@ -54,7 +59,8 @@ export default class Comcigan {
     constructor(options) {
         this._options = {
             "cacheMs": 0,
-            "doNotThrow": false
+            "doNotThrow": false,
+            "appVersion": "2.11",
         };
         this._cache = new Cache();
         this._options = Object.assign(Object.assign({}, this._options), options);
@@ -83,9 +89,10 @@ export default class Comcigan {
      */
     GetTimetable(options) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a;
+            var _a, _b, _c, _d, _e, _f, _g;
             const { schoolCode, criteria, grade, classN, without8th } = options;
-            const str = `36174_${schoolCode}_1_4_0_3_1.00`;
+            const { appVersion } = this._options;
+            const str = `36174_${schoolCode}_1_4_0_3_${appVersion}`;
             const route = (str.substring(9) + str.substring(0, 9)).split("").reverse().join("");
             const data = yield this.request(`7813?${route}`, true);
             const [latestVersion, step1] = data.split("^");
@@ -106,7 +113,7 @@ export default class Comcigan {
                     for (let period = 1; period < (without8th ? 8 : 9); period++) {
                         const o = origin[weekday][period];
                         const t = today[weekday][period];
-                        if (!o || !t) {
+                        if (o === undefined || t === undefined) {
                             weekdayList.push({
                                 "subject": "-",
                                 "teacher": "-"
@@ -117,19 +124,19 @@ export default class Comcigan {
                         const originTeacher = json.성명[this.mTh(o, sep) % sep];
                         if (o === t) {
                             weekdayList.push({
-                                "subject": originSubject,
-                                "teacher": originTeacher
+                                "subject": (_b = this.unusable(originSubject, json.과목명)) !== null && _b !== void 0 ? _b : "-",
+                                "teacher": (_c = this.unusable(originTeacher, json.성명)) !== null && _c !== void 0 ? _c : "-"
                             });
                             continue;
                         }
                         const changedSubject = json.과목명[this.mSb(t, sep) % sep];
                         const changedTeacher = json.성명[this.mTh(t, sep) % sep];
                         weekdayList.push({
-                            "subject": originSubject,
-                            "teacher": originTeacher,
+                            "subject": (_d = this.unusable(changedSubject, json.과목명)) !== null && _d !== void 0 ? _d : "-",
+                            "teacher": (_e = this.unusable(changedTeacher, json.성명)) !== null && _e !== void 0 ? _e : "-",
                             "original": {
-                                "subject": changedSubject,
-                                "teacher": changedTeacher
+                                "subject": (_f = this.unusable(originSubject, json.과목명)) !== null && _f !== void 0 ? _f : "-",
+                                "teacher": (_g = this.unusable(originTeacher, json.성명)) !== null && _g !== void 0 ? _g : "-",
                             }
                         });
                     }

@@ -43,6 +43,12 @@ export interface ComciganInitializeType {
      * 기본값은 없습니다.
      */
     debug?: (msg: string) => any;
+    /**
+     * 컴시간알리미의 앱 버전입니다.
+     *
+     * 기본값은 2.11입니다.
+     */
+    appVersion?: string;
 }
 export type ComciganSearched = {
     /**
@@ -100,6 +106,7 @@ export default class Comcigan {
     private _cache;
     private mSb;
     private mTh;
+    private unusable;
     private request;
     private EUC_KR_encodeURI;
     /**

@@ -48,6 +48,12 @@ export interface ComciganInitializeType {
      * 기본값은 없습니다.
      */
     debug?: (msg: string) => any;
+    /**
+     * 컴시간알리미의 앱 버전입니다.
+     * 
+     * 기본값은 2.11입니다.
+     */
+    appVersion?: string;
 }
 export type ComciganSearched = {
     /**
@@ -105,12 +111,19 @@ export type ComciganTimetable = {
 export default class Comcigan {
     private _options: ComciganInitializeType = {
         "cacheMs": 0,
-        "doNotThrow": false
+        "doNotThrow": false,
+        "appVersion": "2.11",
     };
     private _cache = new Cache();
 
     private mSb(mm: number, m2: number) { if (m2 == 100) { return mm % m2; } return Math.floor(mm / m2); }
     private mTh(mm: number, m2: number) { if (m2 == 100) { return Math.floor(mm / m2); } return mm % m2; }
+
+    private unusable(object: any, array: any[]) {
+        if (object === array[0]) return;
+
+        return object;
+    }
 
     private async request<T = any>(route: string, doNotParse?: boolean): Promise<T> {
         if (this._cache.has(route)) {
@@ -181,8 +194,9 @@ export default class Comcigan {
      */
     public async GetTimetable(options: GetTimetableOptions): Promise<ComciganTimetable | undefined> {
         const { schoolCode, criteria, grade, classN, without8th } = options;
+        const { appVersion } = this._options;
 
-        const str = `36174_${schoolCode}_1_4_0_3_1.00`;
+        const str = `36174_${schoolCode}_1_4_0_3_${appVersion}`;
         const route = (str.substring(9) + str.substring(0, 9)).split("").reverse().join("");
         const data = await this.request<string>(`7813?${route}`, true);
 
@@ -209,7 +223,7 @@ export default class Comcigan {
                     const o = origin[weekday][period];
                     const t = today[weekday][period];
 
-                    if (!o || !t) {
+                    if (o === undefined || t === undefined) {
                         weekdayList.push({
                             "subject": "-",
                             "teacher": "-"
@@ -222,8 +236,8 @@ export default class Comcigan {
 
                     if (o === t) {
                         weekdayList.push({
-                            "subject": originSubject,
-                            "teacher": originTeacher
+                            "subject": this.unusable(originSubject, json.과목명) ?? "-",
+                            "teacher": this.unusable(originTeacher, json.성명) ?? "-"
                         });
                         continue;
                     }
@@ -232,11 +246,11 @@ export default class Comcigan {
                     const changedTeacher = json.성명[this.mTh(t, sep) % sep];
 
                     weekdayList.push({
-                        "subject": originSubject,
-                        "teacher": originTeacher,
+                        "subject": this.unusable(changedSubject, json.과목명) ?? "-",
+                        "teacher": this.unusable(changedTeacher, json.성명) ?? "-",
                         "original": {
-                            "subject": changedSubject,
-                            "teacher": changedTeacher
+                            "subject": this.unusable(originSubject, json.과목명) ?? "-",
+                            "teacher": this.unusable(originTeacher, json.성명) ?? "-",
                         }
                     });
                 }
