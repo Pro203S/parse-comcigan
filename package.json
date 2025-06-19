@@ -12,8 +12,7 @@
     "build": "tsc",
     "clean": "tsc --build --clean",
     "dev": "nodemon --exec ts-node src/index.ts",
-    "test": "npm run pack && node \"test.js\"",
-    "publish": "npm run pack && npm run publish"
+    "test": "npm run pack && node \"test.js\""
   },
   "devDependencies": {
     "@types/node": "^22.15.30",
