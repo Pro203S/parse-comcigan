@@ -25,22 +25,25 @@ export default class Comcigan {
     }
     request(route, doNotParse) {
         return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
             if (this._cache.has(route)) {
-                this._options.debug ? this._options.debug(`[request] Return cache with id registered as ${route}`) : 0;
+                (_b = (_a = this._options).debug) === null || _b === void 0 ? void 0 : _b.call(_a, `Returning cache with id registered as ${route}`);
                 return this._cache.get(route);
             }
-            this._options.debug ? this._options.debug(`[request] Requesting to http://comci.kr:4081/${route}`) : 0;
+            (_d = (_c = this._options).debug) === null || _d === void 0 ? void 0 : _d.call(_c, `Requesting to http://comci.kr:4081/${route}`);
+            const now = new Date();
             const r = yield axios.get(`http://comci.kr:4081/${route}`, Object.assign({}, (this._options.doNotThrow && { "validateStatus": () => true })));
+            (_f = (_e = this._options).debug) === null || _f === void 0 ? void 0 : _f.call(_e, `${new Date().getTime() - now.getTime()}ms http://comci.kr:4081/${route}`);
             if (doNotParse) {
                 if (this._options.cacheMs && this._options.cacheMs !== 0) {
-                    this._options.debug ? this._options.debug(`[request] Registered cache with id ${route}`) : 0;
+                    (_h = (_g = this._options).debug) === null || _h === void 0 ? void 0 : _h.call(_g, `Registered cache with id ${route}`);
                     this._cache.register(route, r.data, this._options.cacheMs);
                 }
                 return r.data;
             }
             const data = JSON.parse(r.data.slice(0, r.data.indexOf("}") + 1));
             if (this._options.cacheMs && this._options.cacheMs !== 0) {
-                this._options.debug ? this._options.debug(`[request] Registered cache with id ${route}`) : 0;
+                (_k = (_j = this._options).debug) === null || _k === void 0 ? void 0 : _k.call(_j, `Registered cache with id ${route}`);
                 this._cache.register(route, data, this._options.cacheMs);
             }
             return data;
@@ -90,9 +93,9 @@ export default class Comcigan {
     GetTimetable(options) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c, _d, _e, _f, _g;
-            const { schoolCode, criteria, grade, classN, without8th } = options;
+            const { schoolCode, criteria, grade, classN, without8th, nextWeek } = options;
             const { appVersion } = this._options;
-            const str = `36174_${schoolCode}_1_4_0_3_${appVersion}`;
+            const str = `36174_${schoolCode}_${nextWeek ? 2 : 1}_4_0_3_${appVersion}`;
             const route = (str.substring(9) + str.substring(0, 9)).split("").reverse().join("");
             const data = yield this.request(`7813?${route}`, true);
             const [latestVersion, step1] = data.split("^");

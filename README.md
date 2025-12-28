@@ -79,9 +79,10 @@ comci.GetTimetable({
     "criteria": "period",
     "grade": 3,
     "classN": 5,
-    "without8th": false
+    "without8th": false,
+    "nextWeek": true // 다음 주 시간표 가져오기 (등록된 일자가 1개이면 이번 주 시간표를 가져옵니다.)
 }).then(data => {
-    console.log(data.timetable[0][7]); // [요일][교시] 월요일 8교시
+    console.log(data.timetable[0][7]); // [요일][교시] 다음주 월요일 8교시
 });
 comci.GetTimetable({
     "schoolCode": 96211,
@@ -91,7 +92,6 @@ comci.GetTimetable({
     "without8th": true
 }).then(data => {
     console.log(data.timetable[4][0]); // [교시][요일] 월요일 5교시
-    console.log(data.timetable[7]); // undefined
 });
 ```
 
@@ -139,8 +139,15 @@ comci.GetClassList(96211).then(data => {
 |criteria|"weekday" or "period"|Yes|리스트 반환을 어떻게 할지 여부입니다.|
 |grade|number|Yes|학년|
 |classN|number|Yes|반|
+|without8th|boolean|No|8교시를 빼고 리턴할지에 대한 여부입니다.|
+|nextWeek|boolean|No|다음 주 시간표를 반환할지에 대한 여부입니다.|
 
 ## 업데이트 로그
+
+### 0.3.0
+
+- 다음 주 시간표 보기
+- 디버그 메시지 수정
 
 ### 0.2.0
 

@@ -27,6 +27,10 @@ export type GetTimetableOptions = {
      * 8교시를 빼고 리턴할지 여부입니다.
      */
     "without8th"?: boolean,
+    /**
+     * 다음 주 시간표를 가져올지에 대한 여부입니다.
+     */
+    "nextWeek"?: boolean;
 };
 export interface ComciganInitializeType {
     /**
@@ -127,18 +131,20 @@ export default class Comcigan {
 
     private async request<T = any>(route: string, doNotParse?: boolean): Promise<T> {
         if (this._cache.has(route)) {
-            this._options.debug ? this._options.debug(`[request] Return cache with id registered as ${route}`) : 0;
+            this._options.debug?.(`Returning cache with id registered as ${route}`);
             return this._cache.get(route);
         }
 
-        this._options.debug ? this._options.debug(`[request] Requesting to http://comci.kr:4081/${route}`) : 0;
+        this._options.debug?.(`Requesting to http://comci.kr:4081/${route}`);
+        const now = new Date();
         const r = await axios.get<any>(`http://comci.kr:4081/${route}`, {
             ...(this._options.doNotThrow && { "validateStatus": () => true })
         });
+        this._options.debug?.(`${new Date().getTime() - now.getTime()}ms http://comci.kr:4081/${route}`);
 
         if (doNotParse) {
             if (this._options.cacheMs && this._options.cacheMs !== 0) {
-                this._options.debug ? this._options.debug(`[request] Registered cache with id ${route}`) : 0;
+                this._options.debug?.(`Registered cache with id ${route}`);
                 this._cache.register(route, r.data, this._options.cacheMs);
             }
             return r.data;
@@ -146,7 +152,7 @@ export default class Comcigan {
 
         const data = JSON.parse(r.data.slice(0, r.data.indexOf("}") + 1));
         if (this._options.cacheMs && this._options.cacheMs !== 0) {
-            this._options.debug ? this._options.debug(`[request] Registered cache with id ${route}`) : 0;
+            this._options.debug?.(`Registered cache with id ${route}`);
             this._cache.register(route, data, this._options.cacheMs);
         }
         return data;
@@ -193,10 +199,10 @@ export default class Comcigan {
      * @param criteria 
      */
     public async GetTimetable(options: GetTimetableOptions): Promise<ComciganTimetable | undefined> {
-        const { schoolCode, criteria, grade, classN, without8th } = options;
+        const { schoolCode, criteria, grade, classN, without8th, nextWeek } = options;
         const { appVersion } = this._options;
 
-        const str = `36174_${schoolCode}_1_4_0_3_${appVersion}`;
+        const str = `36174_${schoolCode}_${nextWeek ? 2 : 1}_4_0_3_${appVersion}`;
         const route = (str.substring(9) + str.substring(0, 9)).split("").reverse().join("");
         const data = await this.request<string>(`7813?${route}`, true);
 

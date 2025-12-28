@@ -22,6 +22,10 @@ export type GetTimetableOptions = {
      * 8교시를 빼고 리턴할지 여부입니다.
      */
     "without8th"?: boolean;
+    /**
+     * 다음 주 시간표를 가져올지에 대한 여부입니다.
+     */
+    "nextWeek"?: boolean;
 };
 export interface ComciganInitializeType {
     /**
