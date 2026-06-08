@@ -12,6 +12,7 @@
     "build": "tsc",
     "clean": "tsc --build --clean",
     "dev": "nodemon --exec ts-node src/index.ts",
+    "watch": "tsc --watch",
     "test": "npm run pack && node \"test.js\""
   },
   "devDependencies": {
