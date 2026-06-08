@@ -19,6 +19,7 @@ export default class Comcigan {
 
     /**
      * 학교를 검색합니다.
+     * 
      * @param query 검색어
      * @returns 검색 결과
      */
@@ -49,12 +50,23 @@ export default class Comcigan {
         this._data[idx] = obj;
     }
 
-    public async schoolInfo() {
+    /**
+     * 학교의 정보를 가져옵니다.
+     */
+    public async schoolInfo(week?: number) {
         await this._getdata();
+
+        const data = this._data[week ?? 1];
 
 
     }
 
+    /**
+     * 시간표를 조회합니다.
+     * 
+     * @param options 시간표 옵션
+     * @returns 시간표
+     */
     public async timetable(options: {
         "grade": number,
         "classNum": number,
@@ -65,7 +77,7 @@ export default class Comcigan {
         await this._getdata(week);
         const data = this._data[week ?? 1];
 
-        const toReturn: ComciganTimetable = [[], [], [], [], []];
+        const toReturn: ComciganTimetable = [];
 
         // 자료481: 현재 데이터
         // 자료147: 원본 데이터
@@ -73,6 +85,8 @@ export default class Comcigan {
         // 자료492: 과목
 
         for (let day = 1; day <= 5; day++) {
+            const dayItems: ComciganTimetableItem[] = [];
+
             for (let time = 1; time <= 8; time++) {
                 const now = splitData(data.자료481[grade][classNum][day][time]);
                 if (now === -1) continue;
@@ -87,7 +101,7 @@ export default class Comcigan {
                     const newSubject = data.자료492[origin[1]];
                     const newTeacher = data.자료446[origin[0]];
 
-                    toReturn[day - 1][time - 1] = {
+                    dayItems.push({
                         subject,
                         teacher,
                         "classRoom": classRoomAvailable ? (classRoom as string).split("_")[1] : undefined,
@@ -95,16 +109,21 @@ export default class Comcigan {
                             "subject": newSubject,
                             "teacher": newTeacher
                         }
-                    };
+                    });
                     continue;
                 }
 
-                toReturn[day - 1][time - 1] = {
+                dayItems.push({
                     subject,
                     teacher,
                     "classRoom": classRoomAvailable ? classRoom : undefined
-                };
+                });
             }
+
+            toReturn[day - 1] = {
+                "total": dayItems.length,
+                "items": dayItems
+            };
         }
 
         return toReturn;

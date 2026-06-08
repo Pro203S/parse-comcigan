@@ -18,11 +18,6 @@
 
 학교를 검색하려면 먼저 `Comcigan` 클래스를 가져오신 후, `search` 메서드를 호출하시면 됩니다.  
 
-필요한 인수:
-|이름|타입|설명|
-|-|-|-|
-|query|string|검색어|
-
 반환:
 |이름|타입|설명|
 |-|-|-|
@@ -46,6 +41,68 @@ for (const school of schools) {
     console.log(`이름: ${school.name}`);
     console.log(`지역: ${school.region}`);
 }
+```
+
+## 2. 컴시간 인스턴스 생성하기
+
+컴시간 인스턴스를 생성해 학교의 여러 정보를 가져올 수 있습니다.  
+`new Comcigan(code)`로 컴시간 인스턴스를 생성할 수 있습니다.  
+
+### 예시 코드
+
+```typescript
+import Comcigan from 'parse-comcigan';
+import readline from 'readline';
+
+const rl = readline.createInterface({
+    "input": process.stdin,
+    "output": process.stdout
+});
+
+(async () => {
+    // 검색어 입력
+    const answer = await new Promise<string>(r => rl.question("학교 이름을 입력해주세요: ", r));
+    rl.close();
+    
+    // 학교 검색하기
+    const school = (await Comcigan.search(answer))[0];
+
+    console.log(`검색된 학교:`);
+    console.log(`- 이름: ${school.name}`);
+    console.log(`- 지역: ${school.region}`);
+    console.log();
+
+    // 컴시간 인스턴스 생성
+    const comci = new Comcigan(school.code);
+
+    // 시간표 조회
+    console.log(await comci.timetable({
+        "grade": 1,
+        "classNum": 6
+    }));
+})();
+```
+
+## 3. 시간표 가져오기
+
+위에서 생성한 컴시간 인스턴스로 학교의 시간표를 조회할 수 있습니다.  
+
+### 예시 코드
+
+```typescript
+import Comcigan from 'parse-comcigan';
+import readline from 'readline';
+
+(async () => {
+    // 컴시간 인스턴스 생성
+    const comci = new Comcigan(24966);
+
+    // 시간표 조회
+    console.log(await comci.timetable({
+        "grade": 1,
+        "classNum": 6
+    }));
+})();
 ```
 
 ## 업데이트 로그

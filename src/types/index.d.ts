@@ -1,6 +1,9 @@
 export type ComciganSchool = {
+    /** 지역 */
     "region": string,
+    /** 이름 */
     "name": string,
+    /** 코드 */
     "code": number
 };
 
@@ -9,19 +12,37 @@ export type ComciganSearchRaw = {
 };
 
 export type ComciganTimetableItem = {
+    /** 과목 */
     "subject": string,
+    /** 교사 */
     "teacher": string,
+    /** 특별실 */
     "classRoom"?: string,
+    /** 원래 시간표 */
     "original"?: Omit<ComciganTimetableItem, "original" | "classRoom">,
 }
 
-export type ComciganTimetable = [
-    ComciganTimetableItem[], // 월요일
-    ComciganTimetableItem[], // 화요일
-    ComciganTimetableItem[], // 수요일
-    ComciganTimetableItem[], // 목요일
-    ComciganTimetableItem[]  // 금요일
-];
+export type ComciganTimetable = {
+    /** 총 교시 수 */
+    "total": number,
+    /** 시간표 아이템 */
+    "items": ComciganTimetableItem[]
+}[];
+
+export type ComciganSchoolInfo = {
+    /** 일과시간 */
+    "times": {
+        /** 교시 */
+        "number": number,
+        /** 시:분 */
+        "time": `${number}:${number}`
+    },
+    /** 학년 마다 학급 수 */
+    "classes": number[],
+    /** 시간표 변경 날짜 */
+    "changedAt": Date,
+
+};
 
 export interface ComciganRawData {
     "교사수": number;
