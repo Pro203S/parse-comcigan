@@ -35,12 +35,17 @@ export type ComciganSchoolInfo = {
         /** 교시 */
         "number": number,
         /** 시:분 */
-        "time": `${number}:${number}`
-    },
+        "start": `${number}:${number}`
+    }[],
     /** 학년 마다 학급 수 */
     "classes": number[],
     /** 시간표 변경 날짜 */
     "changedAt": Date,
+    /** 학교 코드 */
+    "code": number
+};
+
+export type ComciganClassInfo = {
 
 };
 

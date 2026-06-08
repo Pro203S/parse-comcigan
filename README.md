@@ -105,6 +105,28 @@ import readline from 'readline';
 })();
 ```
 
+## 4. 학교 정보 가져오기
+
+위에서 생성한 컴시간 인스턴스로 학교의 여러 정보를 가져올 수 있습니다.  
+
+### 예시 코드
+
+```typescript
+import Comcigan from 'parse-comcigan';
+import readline from 'readline';
+
+(async () => {
+    // 컴시간 인스턴스 생성
+    const comci = new Comcigan(24966);
+
+    // 학교 정보 조회
+    console.log(await comci.schoolInfo({
+        "grade": 1,
+        "classNum": 6
+    }));
+})();
+```
+
 ## 업데이트 로그
 
 ### 0.3.0

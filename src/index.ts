@@ -1,7 +1,8 @@
 import ComciganError from "./error.js";
 import axios from "axios";
 import iconv from "iconv-lite";
-import { ComciganRawData, ComciganSchool, ComciganSearchRaw, ComciganTimetable, ComciganTimetableItem } from "./types/index.js";
+import { ComciganRawData, ComciganSchool, ComciganSchoolInfo, ComciganSearchRaw, ComciganTimetable, ComciganTimetableItem } from "./types/index.js";
+import dayjs from "dayjs";
 axios.defaults.validateStatus = () => true;
 
 function splitData(dat: any) {
@@ -52,13 +53,23 @@ export default class Comcigan {
 
     /**
      * 학교의 정보를 가져옵니다.
+     * 
+     * @returns 학교의 정보
      */
-    public async schoolInfo(week?: number) {
+    public async schoolInfo() {
         await this._getdata();
 
-        const data = this._data[week ?? 1];
+        const data = this._data[1];
 
-
+        return {
+            "changedAt": dayjs(data.자료244, "YYYY-MM-DD HH:mm:ss").toDate(),
+            "classes": data.학급수.slice(1),
+            "times": data.일과시간.map(v => ({
+                "number": Number(v.slice(0, 1)),
+                "start": v.slice(2, 7) as `${number}:${number}`,
+            })),
+            "code": this.code
+        } satisfies ComciganSchoolInfo;
     }
 
     /**
