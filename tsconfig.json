@@ -1,13 +1,14 @@
 {
   "compilerOptions": {
-    "outDir": "dist",
+    "outDir": "./dist",
+    "rootDir": "./src",
     "target": "ES6",
-    "module": "ESNext",
     "lib": [
       "ES6",
       "DOM"
     ],
-    "moduleResolution": "Node",
+    "moduleResolution": "node16",
+    "module": "node16",
     "esModuleInterop": true,
     "declaration": true,
     "strict": true,
