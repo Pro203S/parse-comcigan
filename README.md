@@ -124,6 +124,10 @@ import Comcigan from 'parse-comcigan';
 
 ## 업데이트 로그
 
+### 1.0.0
+
+- 갈아엎기
+
 ### 0.3.0
 
 - 다음 주 시간표 보기
