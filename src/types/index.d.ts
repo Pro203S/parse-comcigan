@@ -45,10 +45,6 @@ export type ComciganSchoolInfo = {
     "code": number
 };
 
-export type ComciganClassInfo = {
-
-};
-
 export interface ComciganRawData {
     "교사수": number;
     "학급수": number[];

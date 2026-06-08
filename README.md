@@ -91,7 +91,6 @@ const rl = readline.createInterface({
 
 ```typescript
 import Comcigan from 'parse-comcigan';
-import readline from 'readline';
 
 (async () => {
     // 컴시간 인스턴스 생성
@@ -113,17 +112,13 @@ import readline from 'readline';
 
 ```typescript
 import Comcigan from 'parse-comcigan';
-import readline from 'readline';
 
 (async () => {
     // 컴시간 인스턴스 생성
     const comci = new Comcigan(24966);
 
     // 학교 정보 조회
-    console.log(await comci.schoolInfo({
-        "grade": 1,
-        "classNum": 6
-    }));
+    console.log(await comci.schoolInfo());
 })();
 ```
 
