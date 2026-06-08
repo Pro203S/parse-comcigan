@@ -12,7 +12,7 @@ export type ComciganTimetableItem = {
     "subject": string,
     "teacher": string,
     "classRoom"?: string,
-    "original"?: Omit<ComciganTimetableItem, "original">,
+    "original"?: Omit<ComciganTimetableItem, "original" | "classRoom">,
 }
 
 export type ComciganTimetable = [
@@ -21,22 +21,13 @@ export type ComciganTimetable = [
     ComciganTimetableItem[], // 수요일
     ComciganTimetableItem[], // 목요일
     ComciganTimetableItem[]  // 금요일
-]
-
-type NestedValue =
-    | string
-    | number
-    | NestedValue[]
-    | { [key: string]: NestedValue };
+];
 
 export interface ComciganRawData {
     "교사수": number;
-    "자료446": string[];
     "학급수": number[];
     "요일별시수": number[][];
 
-    "자료492": (string | number)[];
-    "자료481": NestedValue[];
     "전일제": number[];
 
     "버젼": string;
@@ -48,7 +39,6 @@ export interface ComciganRawData {
 
     "특별실수": number;
     "열람제한일": string;
-    "자료244": string;
 
     "학기시작일자": string;
     "학교명": string;
@@ -68,9 +58,13 @@ export interface ComciganRawData {
 
     "오늘r": number;
 
-    "자료147": NestedValue[];
-    "자료542": NestedValue[];
-    "자료245": NestedValue[];
+    "자료147": any;
+    "자료244": string;
+    "자료245": any;
+    "자료446": string[];
+    "자료481": any;
+    "자료492": any;
+    "자료542": any;
 
     "동시그룹": (number | number[])[];
 }
