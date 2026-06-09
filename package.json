@@ -15,6 +15,10 @@
     "watch": "tsc --watch",
     "test": "npm run pack && node \"test.js\""
   },
+  "exports": {
+    "types": "./src/types/index.d.ts",
+    "default": "./dist/index.js"
+  },
   "devDependencies": {
     "@types/node": "^22.19.20",
     "nodemon": "^3.1.14",
