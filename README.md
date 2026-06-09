@@ -124,6 +124,10 @@ import Comcigan from 'parse-comcigan';
 
 ## 업데이트 로그
 
+### 1.1.1
+
+- 외부에서 tsconfig가 제대로 인식되지 않는 버그 수정
+
 ### 1.1.0
 
 - 타입 import 가능하게
