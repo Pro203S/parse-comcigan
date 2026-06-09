@@ -124,6 +124,10 @@ import Comcigan from 'parse-comcigan';
 
 ## 업데이트 로그
 
+### 1.1.0
+
+- 타입 import 가능하게
+
 ### 1.0.0
 
 - 갈아엎기
