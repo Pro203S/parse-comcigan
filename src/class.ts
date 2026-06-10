@@ -113,12 +113,12 @@ export default class Comcigan {
                     const newTeacher = data.자료446[origin[0]];
 
                     dayItems.push({
-                        subject,
-                        teacher,
+                        "subject": newSubject,
+                        "teacher": newTeacher,
                         "classRoom": classRoomAvailable ? (classRoom as string).split("_")[1] : undefined,
                         "original": newSubject === subject && newTeacher === teacher ? undefined : {
-                            "subject": newSubject,
-                            "teacher": newTeacher
+                            "subject": subject,
+                            "teacher": teacher,
                         }
                     });
                     continue;
