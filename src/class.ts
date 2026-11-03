@@ -5,10 +5,18 @@ import { ComciganRawData, ComciganSchool, ComciganSchoolInfo, ComciganSearchRaw,
 import dayjs from "dayjs";
 axios.defaults.validateStatus = () => true;
 
-function splitData(dat: any) {
-    const d = String(dat).match(/\d{1,3}(?=(\d{3})+(?!\d))|\d{1,3}$/g);
-    if (!d) return -1;
-    return d.reverse().map(Number);
+const API_URL = "http://comci.net:4082/165823";
+
+function splitData(dat: unknown) {
+    const value = Number(String(dat ?? 0).replace(/^>/, ""));
+    if (!Number.isSafeInteger(value) || value <= 0) return undefined;
+    return [value % 1000, Math.floor(value / 1000)] as const;
+}
+
+function teacherName(name: string = "") {
+    if ((name.includes("*") && !name.startsWith("*") && !name.endsWith("*"))
+        || (name.length === 2 && name[1] === "*")) return name;
+    return name.replace("*", "");
 }
 
 export default class Comcigan {
@@ -29,7 +37,7 @@ export default class Comcigan {
             .map(byte => '%' + byte.toString(16).toUpperCase().padStart(2, '0'))
             .join('');
 
-        const r = await axios.get<string>("http://comci.net:4082/36179?17384l" + euckr);
+        const r = await axios.get<string>(`${API_URL}?47241l${euckr}`);
         const obj: ComciganSearchRaw = JSON.parse(r.data.substring(0, r.data.lastIndexOf("}") + 1));
         return obj.학교검색
             .filter(v => v[3] !== 0)
@@ -43,9 +51,9 @@ export default class Comcigan {
     private async _getdata(index?: number) {
         const idx = index ?? 1;
         if (this._data[idx]) return this._data[idx];
-        const route = btoa(`73629_${this.code}_0_${idx}`);
+        const route = btoa(`107225_${this.code}_0_${idx}`);
 
-        const r = await axios.get<string>(`http://comci.net:4082/36179?${route}`);
+        const r = await axios.get<string>(`${API_URL}?${route}`);
         if (r.data.startsWith("{}")) throw new ComciganError(`학교 정보를 가져오는데 실패했어요. 학교 코드가 올바른지 확인해주세요.`);
         const obj: ComciganRawData = JSON.parse(r.data.substring(0, r.data.lastIndexOf("}") + 1));
         this._data[idx] = obj;
@@ -62,8 +70,8 @@ export default class Comcigan {
         const data = this._data[1];
 
         return {
-            "changedAt": dayjs(data.자료244, "YYYY-MM-DD HH:mm:ss").toDate(),
-            "classes": data.학급수.slice(1),
+            "changedAt": dayjs(data.자료108, "YYYY-MM-DD HH:mm:ss").toDate(),
+            "classes": data.학급수.slice(1).map((count, index) => count - (data.가상학급수?.[index + 1] ?? 0)),
             "times": data.일과시간.map(v => ({
                 "number": Number(v.slice(0, 1)),
                 "start": v.slice(2, 7) as `${number}:${number}`,
@@ -90,44 +98,38 @@ export default class Comcigan {
 
         const toReturn: ComciganTimetable = [];
 
-        // 자료481: 현재 데이터
-        // 자료147: 원본 데이터
-        // 자료446: 선생님
-        // 자료492: 과목
+        const division = data.분리 ?? 100;
 
         for (let day = 1; day <= 5; day++) {
             const dayItems: ComciganTimetableItem[] = [];
 
             for (let time = 1; time <= 8; time++) {
-                const now = splitData(data.자료481[grade][classNum][day][time]);
-                if (now === -1) continue;
+                const current = data.자료158?.[grade]?.[classNum]?.[day]?.[time];
+                const now = splitData(current);
+                if (!now || now[0] === 0) continue;
 
-                const subject = data.자료492[now[1]];
-                const teacher = data.자료446[now[0]];
-                const classRoom = data.자료245[grade][classNum][day][time];
-                const classRoomAvailable = classRoom !== undefined && classRoom !== "";
+                const subject = String(data.자료123[now[1] % division] ?? "");
+                const teacher = teacherName(data.자료119[now[0]]);
+                const room = data.강의실 === 1
+                    ? data.자료150?.[grade]?.[classNum]?.[day]?.[time]
+                    : undefined;
+                const roomParts = typeof room === "string" ? room.split("_") : [];
+                const classRoom = Number(roomParts[0]) > 0 ? roomParts[1] : undefined;
 
-                const origin = splitData(data.자료147?.[grade]?.[classNum]?.[day]?.[time]);
-                if (origin !== -1) {
-                    const newSubject = data.자료492[origin[1]];
-                    const newTeacher = data.자료446[origin[0]];
-
-                    dayItems.push({
-                        "subject": newSubject,
-                        "teacher": newTeacher,
-                        "classRoom": classRoomAvailable ? (classRoom as string).split("_")[1] : undefined,
-                        "original": newSubject === subject && newTeacher === teacher ? undefined : {
-                            "subject": subject,
-                            "teacher": teacher,
-                        }
-                    });
-                    continue;
-                }
+                const original = data.자료167?.[grade]?.[classNum]?.[day]?.[time];
+                const origin = splitData(original);
+                const changed = data.변경알림 === 1
+                    ? String(current).startsWith(">")
+                    : String(current) !== String(original);
 
                 dayItems.push({
                     subject,
                     teacher,
-                    "classRoom": classRoomAvailable ? classRoom : undefined
+                    classRoom,
+                    original: changed && origin && origin[0] > 0 ? {
+                        subject: String(data.자료123[origin[1] % division] ?? ""),
+                        teacher: teacherName(data.자료119[origin[0]]),
+                    } : undefined,
                 });
             }
 
