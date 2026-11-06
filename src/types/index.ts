@@ -8,7 +8,7 @@ export type ComciganSchool = {
 };
 
 export type ComciganSearchRaw = {
-    "학교검색": [number, string, string, number][];
+    "학교검색": [number, string, string, ...number[]][];
 };
 
 export type ComciganTimetableItem = {
@@ -81,17 +81,17 @@ export interface ComciganRawData {
     "오늘r": number;
 
     /** 원본 시간표 */
-    "자료167": any;
+    "자료161": any;
     /** 수정 시각 */
-    "자료108": string;
+    "자료187": string;
     /** 강의실 */
-    "자료150": any;
+    "자료197": any;
     /** 교사 목록 */
     "자료119": string[];
     /** 현재 시간표. 변경된 수업에는 > 접두사가 붙을 수 있습니다. */
-    "자료158": any;
+    "자료129": any;
     /** 과목 목록 (0번 항목은 과목 수) */
-    "자료123": (string | number)[];
+    "자료167": (string | number)[];
     "자료140": any;
 
     "동시그룹": (number | number[])[];

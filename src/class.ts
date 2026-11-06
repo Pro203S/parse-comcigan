@@ -1,22 +1,17 @@
 import ComciganError from "./error.js";
 import axios from "axios";
 import iconv from "iconv-lite";
+import { decryptResponse } from "./crypto.js";
 import { ComciganRawData, ComciganSchool, ComciganSchoolInfo, ComciganSearchRaw, ComciganTimetable, ComciganTimetableItem } from "./types/index.js";
 import dayjs from "dayjs";
 axios.defaults.validateStatus = () => true;
 
-const API_URL = "http://comci.net:4082/165823";
+const API_URL = "http://comci.net:4082/519303";
 
 function splitData(dat: unknown) {
     const value = Number(String(dat ?? 0).replace(/^>/, ""));
     if (!Number.isSafeInteger(value) || value <= 0) return undefined;
     return [value % 1000, Math.floor(value / 1000)] as const;
-}
-
-function teacherName(name: string = "") {
-    if ((name.includes("*") && !name.startsWith("*") && !name.endsWith("*"))
-        || (name.length === 2 && name[1] === "*")) return name;
-    return name.replace("*", "");
 }
 
 export default class Comcigan {
@@ -37,25 +32,28 @@ export default class Comcigan {
             .map(byte => '%' + byte.toString(16).toUpperCase().padStart(2, '0'))
             .join('');
 
-        const r = await axios.get<string>(`${API_URL}?47241l${euckr}`);
-        const obj: ComciganSearchRaw = JSON.parse(r.data.substring(0, r.data.lastIndexOf("}") + 1));
+        const r = await axios.get<string>(`${API_URL}?96012l${euckr}_enc2`, { responseType: "text" });
+        const decoded = decryptResponse(r.data);
+        const obj: ComciganSearchRaw = JSON.parse(decoded.substring(0, decoded.lastIndexOf("}") + 1));
         return obj.학교검색
-            .filter(v => v[3] !== 0)
+            .map(v => ({ code: v[Math.floor(v[0] / 6347) + 2], region: v[1], name: v[2] }))
+            .filter((v): v is ComciganSchool => typeof v.code === "number" && v.code > 0)
             .map(v => ({
-                "code": v[3],
-                "region": v[1],
-                "name": v[2]
+                "code": v.code,
+                "region": v.region,
+                "name": v.name
             } satisfies ComciganSchool));
     }
 
     private async _getdata(index?: number) {
         const idx = index ?? 1;
         if (this._data[idx]) return this._data[idx];
-        const route = btoa(`107225_${this.code}_0_${idx}`);
+        const route = btoa(`44613_${this.code}_0_${idx}_enc2`);
 
-        const r = await axios.get<string>(`${API_URL}?${route}`);
-        if (r.data.startsWith("{}")) throw new ComciganError(`학교 정보를 가져오는데 실패했어요. 학교 코드가 올바른지 확인해주세요.`);
-        const obj: ComciganRawData = JSON.parse(r.data.substring(0, r.data.lastIndexOf("}") + 1));
+        const r = await axios.get<string>(`${API_URL}?${route}`, { responseType: "text" });
+        const decoded = decryptResponse(r.data);
+        if (decoded.startsWith("{}")) throw new ComciganError(`학교 정보를 가져오는데 실패했어요. 학교 코드가 올바른지 확인해주세요.`);
+        const obj: ComciganRawData = JSON.parse(decoded.substring(0, decoded.lastIndexOf("}") + 1));
         this._data[idx] = obj;
     }
 
@@ -70,7 +68,7 @@ export default class Comcigan {
         const data = this._data[1];
 
         return {
-            "changedAt": dayjs(data.자료108, "YYYY-MM-DD HH:mm:ss").toDate(),
+            "changedAt": dayjs(data.자료187, "YYYY-MM-DD HH:mm:ss").toDate(),
             "classes": data.학급수.slice(1).map((count, index) => count - (data.가상학급수?.[index + 1] ?? 0)),
             "times": data.일과시간.map(v => ({
                 "number": Number(v.slice(0, 1)),
@@ -104,19 +102,19 @@ export default class Comcigan {
             const dayItems: ComciganTimetableItem[] = [];
 
             for (let time = 1; time <= 8; time++) {
-                const current = data.자료158?.[grade]?.[classNum]?.[day]?.[time];
+                const current = data.자료129?.[grade]?.[classNum]?.[day]?.[time];
                 const now = splitData(current);
                 if (!now || now[0] === 0) continue;
 
-                const subject = String(data.자료123[now[1] % division] ?? "");
-                const teacher = teacherName(data.자료119[now[0]]);
+                const subject = String(data.자료167[now[1] % division] ?? "");
+                const teacher = data.자료119[now[0]];
                 const room = data.강의실 === 1
-                    ? data.자료150?.[grade]?.[classNum]?.[day]?.[time]
+                    ? data.자료197?.[grade]?.[classNum]?.[day]?.[time]
                     : undefined;
                 const roomParts = typeof room === "string" ? room.split("_") : [];
                 const classRoom = Number(roomParts[0]) > 0 ? roomParts[1] : undefined;
 
-                const original = data.자료167?.[grade]?.[classNum]?.[day]?.[time];
+                const original = data.자료161?.[grade]?.[classNum]?.[day]?.[time];
                 const origin = splitData(original);
                 const changed = data.변경알림 === 1
                     ? String(current).startsWith(">")
@@ -127,8 +125,8 @@ export default class Comcigan {
                     teacher,
                     classRoom,
                     original: changed && origin && origin[0] > 0 ? {
-                        subject: String(data.자료123[origin[1] % division] ?? ""),
-                        teacher: teacherName(data.자료119[origin[0]]),
+                        subject: String(data.자료167[origin[1] % division] ?? ""),
+                        teacher: data.자료119[origin[0]],
                     } : undefined,
                 });
             }
