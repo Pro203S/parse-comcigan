@@ -126,7 +126,7 @@ import Comcigan from 'parse-comcigan';
 
 ### 1.4.0
 
-- 컴시간 직접 파싱
+- 컴시간 구조에 맞춰서 픽스
 
 ### 1.3.0
 
