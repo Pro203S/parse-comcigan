@@ -124,6 +124,10 @@ import Comcigan from 'parse-comcigan';
 
 ## 업데이트 로그
 
+### 1.4.0
+
+- 컴시간 직접 파싱
+
 ### 1.3.0
 
 - 컴시간 API 구조 변경에 따른 픽스
