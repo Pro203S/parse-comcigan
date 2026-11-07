@@ -2,9 +2,9 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "target": "ES6",
+    "target": "ES2021",
     "lib": [
-      "ES6",
+      "ES2021",
       "DOM"
     ],
     "moduleResolution": "node16",
