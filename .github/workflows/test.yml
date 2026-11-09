@@ -1,0 +1,36 @@
+
+name: Daily Comcigan Test
+
+on:
+    schedule:
+        - cron: '0 9 * * *'
+          timezone: 'Asia/Seoul'
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: latest
+
+            - name: Test published package
+              run: |
+                  mkdir -p /tmp/comcigan-test
+                  cp test.ts /tmp/comcigan-test/test.ts
+                  cd /tmp/comcigan-test
+
+                  echo '{"private":true,"type":"module"}' > package.json
+                  bun add parse-comcigan@latest
+
+                  bun run test.ts

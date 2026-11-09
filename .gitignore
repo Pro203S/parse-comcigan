@@ -3,8 +3,5 @@ node_modules/
 package-lock.json
 .DS_Store
 
-test.js
-test.ts
-
 bun.lock
 dist
