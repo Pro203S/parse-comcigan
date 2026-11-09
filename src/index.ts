@@ -47,8 +47,19 @@ function lessons(html: string): {
 }
 
 export default class Comcigan {
+    /**
+     * 새 컴시간 인스턴스를 생성합니다.
+     * 
+     * @param code 학교 코드 (Comcigan.search로 검색 가능)
+     */
     constructor(public code: number) { }
 
+    /**
+     * 학교를 검색합니다.  
+     * 
+     * @param query 검색어
+     * @returns 컴시간 학교 리스트
+     */
     public static async search(query: string) {
         if (typeof query !== "string" || !query.trim()) {
             throw new ComciganError("학교 검색어를 입력해주세요.");
@@ -56,6 +67,11 @@ export default class Comcigan {
         return withPage((page) => page.search(query.trim()));
     }
 
+    /**
+     * 학교 정보를 가져옵니다.  
+     * 
+     * @returns 학교 정보
+     */
     public async schoolInfo(): Promise<ComciganSchoolInfo> {
         return withPage(async (page) => {
             const data = await page.data(this.code, 1);
@@ -81,6 +97,12 @@ export default class Comcigan {
         });
     }
 
+    /**
+     * 시간표를 가져옵니다.
+     * 
+     * @param options 학년, 반, 주차
+     * @returns 시간표 데이터
+     */
     public async timetable(options: ComciganTimetableOptions): Promise<ComciganTimetableResult> {
         const { grade, classNum, week = 1 } = options ?? {};
         return withPage(async (page) => {
