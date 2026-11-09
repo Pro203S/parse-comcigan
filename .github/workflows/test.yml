@@ -1,5 +1,5 @@
 
-name: Daily Comcigan Test
+name: health
 
 on:
     schedule:

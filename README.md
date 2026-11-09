@@ -3,10 +3,16 @@
 컴시간을 파싱하는 라이브러리입니다.  
 아직 학생 시간표밖에 지원하지 않습니다.  
 
-## 경고
+> [!CAUTION]
+> 본 라이브러리는 **비공식적**으로 컴시간알리미의 데이터를 파싱이 라이브러리를 사용하다가 문제가 발생할경우,  
+> **제작자는 책임을 지지 않습니다.**  
 
-본 라이브러리는 **비공식적**으로 컴시간알리미의 데이터를 파싱합니다.  
-이 라이브러리를 사용하다가 문제가 발생할경우, **제작자는 책임을 지지 않습니다.**  
+## 현재 상태
+
+[![health](https://github.com/Pro203S/parse-comcigan/actions/workflows/test.yml/badge.svg)](https://github.com/Pro203S/parse-comcigan/issues)  
+
+위의 뱃지가 `passing`이 아니라면 [Issues](https://github.com/Pro203S/parse-comcigan)에 제보해주세요.  
+
 
 ## 설치
 
