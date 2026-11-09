@@ -1,8 +1,8 @@
-import Comcigan from './dist/index';
+import Comcigan from 'parse-comcigan';
 
 (async () => {
     // 학교를 검색합니다.
-    const searched = await Comcigan.search("컴시간");
+    await Comcigan.search("컴시간");
 
     // 컴시간 인스턴스를 만듭니다.
     const comci = new Comcigan(24966);
