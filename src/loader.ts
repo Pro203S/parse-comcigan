@@ -1,20 +1,21 @@
 import axios from "axios";
+import { inspect } from "node:util";
 import iconv from "iconv-lite";
 import { load } from "cheerio";
 import ScriptSandbox from "./sandbox.js";
 import ComciganError from "./error.js";
-import type { ComciganRawData, ComciganSchool } from "./types/index.js";
+import type { ComciganOptions, ComciganRawData, ComciganSchool } from "./types/index.js";
 
 export const STUDENT_URL = "http://comci.net:4082/st";
 
-export async function request(
-    url: string,
-    headers: Record<string, string> = {}
-): Promise<{
+export async function request(url: string, headers: Record<string, string> = {}, options: ComciganOptions = {}): Promise<{
     "text": string;
     "url": string;
 }> {
     try {
+        if (options.debug) {
+            options.debug(`[parse-comcigan] Request ${JSON.stringify({ "method": "GET", url, headers })}`);
+        }
         const response = await axios.get<ArrayBuffer>(url, {
             headers,
             "responseType": "arraybuffer",
@@ -24,11 +25,18 @@ export async function request(
         const bytes = Buffer.from(response.data);
         const charset = String(response.headers["content-type"] ?? "").match(/charset\s*=\s*["']?([^\s;"']+)/i)?.[1];
         const encoding = charset ?? (/charset\s*=\s*["']?euc-kr/i.test(bytes.toString("ascii")) ? "euc-kr" : "utf-8");
-        return {
+        const result = {
             "text": iconv.decode(bytes, encoding),
             "url": response.request?.res?.responseUrl ?? url
         };
+        if (options.debug) {
+            options.debug(`[parse-comcigan] Response ${JSON.stringify({ "url": result.url, "status": response.status, "headers": response.headers, "body": result.text })}`);
+        }
+        return result;
     } catch (error) {
+        if (options.debug) {
+            options.debug(`[parse-comcigan] Request error ${inspect({ url, error }, { "depth": null, "maxStringLength": null, "maxArrayLength": null })}`);
+        }
         throw new ComciganError("컴시간 서버에 요청하지 못했습니다.", error);
     }
 }
@@ -46,23 +54,19 @@ type Metadata = {
 };
 
 export default class ComciganPage {
-    private constructor(
-        private readonly sandbox: ScriptSandbox,
-        private readonly url: string,
-        private readonly metadata: Metadata
-    ) {}
+    private constructor(private readonly sandbox: ScriptSandbox, private readonly url: string, private readonly metadata: Metadata, private readonly options: ComciganOptions) {}
 
-    public static async load(): Promise<ComciganPage> {
+    public static async load(options: ComciganOptions = {}): Promise<ComciganPage> {
         const sandbox = await ScriptSandbox.create();
         try {
-            const page = await request(STUDENT_URL);
+            const page = await request(STUDENT_URL, {}, options);
             const $ = load(page.text);
             for (const element of $("script").toArray()) {
                 const src = $(element).attr("src");
                 if (src && /jquery/i.test(src)) {
                     continue;
                 }
-                const source = src ? (await request(new URL(src, page.url).href)).text : $(element).text();
+                const source = src ? (await request(new URL(src, page.url).href, {}, options)).text : $(element).text();
                 if (source.trim()) {
                     sandbox.run(`__sources.push(${JSON.stringify(source)});\n${source}`);
                 }
@@ -132,7 +136,7 @@ export default class ComciganPage {
                     };
                 })();
             `);
-            return new ComciganPage(sandbox, page.url, metadata);
+            return new ComciganPage(sandbox, page.url, metadata, options);
         } catch (error) {
             sandbox.dispose();
             throw error instanceof ComciganError ? error : new ComciganError("컴시간 페이지를 분석하지 못했습니다.", error);
@@ -150,7 +154,7 @@ export default class ComciganPage {
         if (requests.length !== 1 || typeof requests[0].url !== "string") {
             throw new ComciganError("컴시간 API 요청을 확인할 수 없습니다.");
         }
-        const response = await request(new URL(requests[0].url, this.url).href, requests[0].headers);
+        const response = await request(new URL(requests[0].url, this.url).href, requests[0].headers, this.options);
         const decoded = this.metadata.decrypt ? this.sandbox.run<string>(`globalThis[${JSON.stringify(this.metadata.decrypt)}](${JSON.stringify(response.text)})`) : response.text;
         try {
             return JSON.parse(decoded.replace(/\x00+$/, ""));

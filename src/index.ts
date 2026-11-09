@@ -1,15 +1,15 @@
 import { load } from "cheerio";
 import ComciganPage from "./loader.js";
 import ComciganError from "./error.js";
-import type { ComciganSchoolInfo, ComciganTimetable, ComciganTimetableItem, ComciganTimetableOptions, ComciganTimetableResult } from "./types/index.js";
+import type { ComciganOptions, ComciganSchoolInfo, ComciganTimetable, ComciganTimetableItem, ComciganTimetableOptions, ComciganTimetableResult } from "./types/index.js";
 
 export { ComciganError };
 export type * from "./types/index.js";
 
-async function withPage<T>(operation: (page: ComciganPage) => Promise<T>): Promise<T> {
+async function withPage<T>(operation: (page: ComciganPage) => Promise<T>, options: ComciganOptions = {}): Promise<T> {
     let page: ComciganPage | undefined;
     try {
-        page = await ComciganPage.load();
+        page = await ComciganPage.load(options);
         return await operation(page);
     } catch (error) {
         throw error instanceof ComciganError ? error : new ComciganError("컴시간 정보를 처리하지 못했습니다.", error);
@@ -52,7 +52,7 @@ export default class Comcigan {
      * 
      * @param code 학교 코드 (Comcigan.search로 검색 가능)
      */
-    constructor(public code: number) { }
+    constructor(public code: number, private readonly options: ComciganOptions = {}) { }
 
     /**
      * 학교를 검색합니다.  
@@ -60,11 +60,11 @@ export default class Comcigan {
      * @param query 검색어
      * @returns 컴시간 학교 리스트
      */
-    public static async search(query: string) {
+    public static async search(query: string, options: ComciganOptions = {}) {
         if (typeof query !== "string" || !query.trim()) {
             throw new ComciganError("학교 검색어를 입력해주세요.");
         }
-        return withPage((page) => page.search(query.trim()));
+        return withPage((page) => page.search(query.trim()), options);
     }
 
     /**
@@ -94,7 +94,7 @@ export default class Comcigan {
                     };
                 })
             };
-        });
+        }, this.options);
     }
 
     /**
@@ -153,6 +153,6 @@ export default class Comcigan {
                 timetable,
                 times
             };
-        });
+        }, this.options);
     }
 }

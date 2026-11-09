@@ -1,3 +1,7 @@
+export type ComciganOptions = {
+    "debug"?: (msg: string) => void;
+};
+
 export type ComciganSchool = {
     "code": number;
     "region": string;
