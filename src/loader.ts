@@ -51,6 +51,7 @@ type Metadata = {
     "original": string;
     "current": string;
     "modifiedAt": string;
+    "modifiedAtDecoder"?: string;
 };
 
 export default class ComciganPage {
@@ -119,7 +120,7 @@ export default class ComciganPage {
                     if (fields.length < 2) {
                         throw new Error("시간표 필드를 찾을 수 없습니다.");
                     }
-                    var modifiedAt = __sources.join("\n").match(/\.text\(\s*['"][^'"]*수정일[^'"]*['"]\s*\+\s*[\p{ID_Start}][\p{ID_Continue}]*\.([\p{ID_Start}][\p{ID_Continue}]*)/u);
+                    var modifiedAt = __sources.join("\n").match(/\.text\(\s*['"][^'"]*수정일[^'"]*['"]\s*\+\s*(?:([\p{ID_Start}][\p{ID_Continue}]*)\s*\(\s*)?[\p{ID_Start}][\p{ID_Continue}]*\.([\p{ID_Start}][\p{ID_Continue}]*)/u);
                     if (!modifiedAt) {
                         throw new Error("수정 시각 필드를 찾을 수 없습니다.");
                     }
@@ -132,7 +133,8 @@ export default class ComciganPage {
                         "prefix": prefix[1],
                         "original": fields[0],
                         "current": fields[1],
-                        "modifiedAt": modifiedAt[1]
+                        "modifiedAt": modifiedAt[2],
+                        "modifiedAtDecoder": modifiedAt[1]
                     };
                 })();
             `);
@@ -216,7 +218,10 @@ export default class ComciganPage {
     }
 
     public modifiedAt(data: ComciganRawData): unknown {
-        return data[this.metadata.modifiedAt];
+        const value = data[this.metadata.modifiedAt];
+        return this.metadata.modifiedAtDecoder
+            ? this.sandbox.run(`globalThis[${JSON.stringify(this.metadata.modifiedAtDecoder)}](${JSON.stringify(value)})`)
+            : value;
     }
 
     public dispose(): void {

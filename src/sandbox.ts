@@ -41,6 +41,13 @@ const browser = String.raw`
         return 0;
     }
     function clearTimeout() {}
+    function TextDecoder(encoding, options) {
+        this.encoding = encoding || "utf-8";
+        this.fatal = !!(options && options.fatal);
+    }
+    TextDecoder.prototype.decode = function (bytes) {
+        return __decodeText(Array.from(bytes || []), this.encoding, this.fatal);
+    };
     function $(value) {
         if (typeof value === "function") {
             return;
@@ -87,6 +94,13 @@ export default class ScriptSandbox {
             context.runtime.setMemoryLimit(32 * 1024 * 1024);
             context.runtime.setMaxStackSize(1024 * 1024);
             context.runtime.setInterruptHandler(() => Date.now() > sandbox.deadline);
+            const decodeText = context.newFunction("__decodeText", (bytes, encoding, fatal) => {
+                const decoder = new TextDecoder(String(context.dump(encoding)), { "fatal": Boolean(context.dump(fatal)) });
+                const value = decoder.decode(Uint8Array.from(context.dump(bytes) as number[]));
+                return context.newString(value);
+            });
+            context.setProp(context.global, "__decodeText", decodeText);
+            decodeText.dispose();
             for (const [name, fn] of Object.entries({
                 "btoa": (value: string) => Buffer.from(value, "binary").toString("base64"),
                 "atob": (value: string) => Buffer.from(value, "base64").toString("binary")
