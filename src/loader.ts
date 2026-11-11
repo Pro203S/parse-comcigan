@@ -46,6 +46,7 @@ type Metadata = {
     "timetable": string;
     "decrypt"?: string;
     "render": string;
+    "times": string;
     "schools": string;
     "prefix": string;
     "original": string;
@@ -101,9 +102,11 @@ export default class ComciganPage {
                     var decrypt = functions.find(function (f) {
                         return /\.AES\.decrypt\s*\(/.test(f.source);
                     });
+                    var timesPattern = /<td\b[^>]*\bclass\s*=\s*['"]교시['"][^>]*>['"]\s*\+\s*[\p{ID_Start}][\p{ID_Continue}]*\.([\p{ID_Start}][\p{ID_Continue}]*)\s*\[[^\]]+\]/iu;
                     var render = find(function (f) {
-                        return f.arity === 3 && /\.일과시간\s*\[/.test(f.source) && /<table/i.test(f.source) && /<\s*6\s*;/.test(f.source);
+                        return f.arity === 3 && timesPattern.test(f.source) && /<table/i.test(f.source) && /<\s*6\s*;/.test(f.source);
                     });
+                    var times = render.source.match(timesPattern)[1];
                     var schools = find(function (f) {
                         return /<a\s/i.test(f.source) && /Math\.floor/.test(f.source) && /\.append\s*\(/.test(f.source);
                     });
@@ -129,6 +132,7 @@ export default class ComciganPage {
                         "timetable": timetable.name,
                         "decrypt": decrypt && decrypt.name,
                         "render": render.name,
+                        "times": times,
                         "schools": schools.name,
                         "prefix": prefix[1],
                         "original": fields[0],
@@ -201,6 +205,7 @@ export default class ComciganPage {
         if (!data || typeof data !== "object" || !Object.keys(data).length) {
             throw new ComciganError("학교를 찾을 수 없습니다.");
         }
+        data.일과시간 = data[this.metadata.times] as string[];
         if (!Array.isArray(data.학급수) || !Array.isArray(data.일과시간)) {
             throw new ComciganError("학교 정보 응답이 올바르지 않습니다.");
         }
