@@ -3,7 +3,7 @@ name: health
 
 on:
     schedule:
-        - cron: '0 9 * * *'
+        - cron: '0 */6 * * *'
           timezone: 'Asia/Seoul'
     workflow_dispatch:
 
