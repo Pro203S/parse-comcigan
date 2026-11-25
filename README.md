@@ -11,7 +11,7 @@
 
 [![health](https://github.com/Pro203S/parse-comcigan/actions/workflows/test.yml/badge.svg)](https://github.com/Pro203S/parse-comcigan/issues)  
 
-위의 뱃지가 `passing`이 아니라면 [Issues](https://github.com/Pro203S/parse-comcigan)에 제보해주세요.  
+위의 뱃지가 `passing`이 아니라면 [Issues](https://github.com/Pro203S/parse-comcigan/issues)에 제보해주세요.  
 
 
 ## 설치
