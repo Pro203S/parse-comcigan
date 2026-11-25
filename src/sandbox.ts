@@ -73,6 +73,9 @@ const browser = String.raw`
     $.ajax = function (options) {
         __requests.push({
             "url": options.url,
+            "method": options.method || options.type || "GET",
+            "contentType": options.contentType,
+            "data": options.data,
             "headers": options.headers || {}
         });
         return {};

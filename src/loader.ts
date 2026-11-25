@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosHeaders } from "axios";
 import { inspect } from "node:util";
 import iconv from "iconv-lite";
 import { load } from "cheerio";
@@ -8,16 +8,31 @@ import type { ComciganOptions, ComciganRawData, ComciganSchool } from "./types/i
 
 export const STUDENT_URL = "http://comci.net:4082/st";
 
-export async function request(url: string, headers: Record<string, string> = {}, options: ComciganOptions = {}): Promise<{
+type RequestOptions = {
+    "method"?: "GET" | "POST";
+    "contentType"?: string;
+    "data"?: string;
+    "headers"?: Record<string, string>;
+};
+
+export async function request(url: string, requestOptions: RequestOptions = {}, options: ComciganOptions = {}): Promise<{
     "text": string;
     "url": string;
 }> {
+    const { method = "GET", contentType, data } = requestOptions;
+    const headers = new AxiosHeaders(requestOptions.headers);
+    if (contentType) {
+        headers.setContentType(contentType, false);
+    }
     try {
         if (options.debug) {
-            options.debug(`[parse-comcigan] Request ${JSON.stringify({ "method": "GET", url, headers })}`);
+            options.debug(`[parse-comcigan] Request ${JSON.stringify({ method, url, headers })}`);
         }
-        const response = await axios.get<ArrayBuffer>(url, {
+        const response = await axios.request<ArrayBuffer>({
+            method,
+            url,
             headers,
+            data,
             "responseType": "arraybuffer",
             "timeout": 15000,
             "maxContentLength": 8 * 1024 * 1024
@@ -151,16 +166,24 @@ export default class ComciganPage {
 
     private async query(name: string, args: unknown[]): Promise<unknown> {
         this.sandbox.run(`__requests = []; globalThis[${JSON.stringify(name)}].apply(null, ${JSON.stringify(args)}.concat(function(){}));`);
-        const requests = this.sandbox.run<
-            {
-                "url": string;
-                "headers": Record<string, string>;
-            }[]
-        >("__requests");
-        if (requests.length !== 1 || typeof requests[0].url !== "string") {
+        const requests = this.sandbox.run<(Omit<RequestOptions, "method"> & {
+            "url": string;
+            "method": string;
+        })[]>("__requests");
+        const [ajax] = requests;
+        if (requests.length !== 1 || typeof ajax.url !== "string" || typeof ajax.method !== "string") {
             throw new ComciganError("컴시간 API 요청을 확인할 수 없습니다.");
         }
-        const response = await request(new URL(requests[0].url, this.url).href, requests[0].headers, this.options);
+        const method = ajax.method.toUpperCase();
+        if (method !== "GET" && method !== "POST") {
+            throw new ComciganError("컴시간 API 요청 방식을 지원하지 않습니다.");
+        }
+        const url = new URL(ajax.url, this.url);
+        const { data, contentType, headers } = ajax;
+        if (method === "GET" && data) {
+            url.search += (url.search ? "&" : "?") + data;
+        }
+        const response = await request(url.href, { method, contentType, headers, "data": method === "POST" ? data : undefined }, this.options);
         const decoded = this.metadata.decrypt ? this.sandbox.run<string>(`globalThis[${JSON.stringify(this.metadata.decrypt)}](${JSON.stringify(response.text)})`) : response.text;
         try {
             return JSON.parse(decoded.replace(/\x00+$/, ""));
